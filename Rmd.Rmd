@@ -1,0 +1,302 @@
+---
+title: "Advertising"
+author: "Griffin Kaiga"
+date: "10/30/2020"
+output: html_document
+---
+
+## 1.Defining the question 
+A Kenyan entrepreneur has created an online cryptography course and would want to advertise it on her blog. She currently targets audiences originating from various countries. In the past, she ran ads to advertise a related course on the same blog and collected data in the process.
+She wants to identify which individuals are most likely to click ads.
+
+## 2. Metrics of sucess
+The project will be considered a success once we are able to provide insights on the group of people who are most likely to click ads 
+
+## 3. Understanding the context
+Targeted advertising is a form of advertising, including online advertising, that is directed towards an audience with certain traits, based on the product or person the advertiser is promoting.These traits can either be demographic with a focus on race, economic status, sex, age, generation, level of education, income level, and employment, or there can be a psychographic focus which is based on the consumer values, personality, attitude, opinion, lifestyle and interest. This focus can also entail behavioral variables, such as browser history, purchase history, and other recent online activities. Targeted advertising is focused on certain traits and consumers who are likely to have a strong preference. These individuals will receive messages instead of those who have no interest and whose preferences do not match a particular product's attributes. This eliminates waste.
+
+## 4. Experimental design
+loading the data
+checking the data
+Find and deal with outliers, anomalies, and missing data within the dataset.
+Perform  univariate and bivariate analysis
+
+```{r}
+# Viewing the datset
+advertising <- read.csv("advertising.csv", header = TRUE)
+class(advertising)
+dim(advertising)
+
+# checking the first six observations
+head(advertising)
+View(advertising)
+
+# checking the data types
+str(advertising)
+```
+```{r}
+# checking for the sum of missing values 
+anyNA(advertising)
+
+# checking for outliers values
+boxplot(advertising$Age)
+
+# checking for the unique items
+unique_items <- advertising[!duplicated(advertising),]
+unique_items
+```
+# There were no missing values in the data.
+# As for the boxplot for the column age, majority of the ages were between 30 and 44. The outliers valid since age is can extend to 60 years.
+```{r}
+# selecting the columns and making them all uniform
+colnames(advertising)
+names(advertising)[names(advertising) == 'Daily Time Spent on Site'] <- "time_spent"
+names(advertising)[names(advertising) == "Daily Internet Usage"] <- "internet_usage"
+names(advertising)[names(advertising) == "Clicked on Ad"] <- "clicked_on_ad" 
+names(advertising)[names(advertising) == "Ad Topic Line"] <- "ad_topic_line"
+names(advertising)[names(advertising) == "Area Income"] <- "area_income"
+```
+```{r}
+
+# Univariate Graphical Exploratory Data Analysis
+
+## 1. Measures of Central Tendency
+
+
+# getting the summaries(min, max, 1st and 3rd quantiles, median, and mean)
+summary(advertising)
+
+# getting the mode
+# creating a function that checks for the mode
+getmode <- function(v) {
+   uniqv <- unique(v)
+   uniqv[which.max(tabulate(match(v, uniqv)))]}
+   
+# applying the function to the columns
+# age
+advertising.Age.mode <- getmode(advertising$Age)
+advertising.Age.mode
+# the most common age was 31 years
+
+# time spent
+advertising.time_spent.mode <- getmode(advertising$time_spent)
+advertising.time_spent.mode
+# the most common time spent was 62.26
+
+# area of income
+advertising.area_income.mode <- getmode(advertising$area_income)
+advertising.area_income.mode
+# the area income obtained often times was 61833.9
+
+# internet usage
+advertising.internet_usage.mode <- getmode(advertising$internet_usage)
+advertising.internet_usage.mode
+# the most appearing internet usage amount was 167.22
+
+advertising.Country.mode <- getmode(advertising$Country)
+advertising.Country.mode
+#  "Czech Republic", was the frequent country in the blog
+
+# city
+advertising.City.mode <- getmode(advertising$City)
+advertising.City.mode
+# "Lisamouth",was the frequent city
+
+# ad topic line
+advertising.ad_topic_line.mode <- getmode(advertising$ad_topic_line)
+advertising.ad_topic_line.mode
+# the frequent ad topic line was, "Cloned 5thgeneration orchestration".
+```
+
+```{r}
+# getting the range
+advertising.time_spent.range <- range(advertising$time_spent)
+advertising.time_spent.range
+
+advertising.Age.range <- range(advertising$Age)
+advertising.Age.range
+
+advertising.area_income.range <- range(advertising$Area.Income)
+advertising.area_income.range
+
+advertising.internet_usage.range <- range(advertising$internet_usage)
+advertising.internet_usage.range
+```
+# the range for the columns time spent, age, area income, and internet usage were 32.60 91.43
+19 61, 13996.5 79484.8, and 104.78 269.96 respectively
+
+
+```{r}
+# getting the standard deviation
+advertising.time_spent.sd <- sd(advertising$time_spent)
+advertising.time_spent.sd
+
+advertising.Age.sd <- sd(advertising$Age)
+advertising.Age.sd
+
+advertising.area_income.sd <- sd(advertising$area_income)
+advertising.area_income.sd
+
+advertising.internet_usage.sd <- sd(advertising$internet_usage)
+advertising.internet_usage.sd
+```
+# the time spent, age, area_income, and internet usage had a standard deviation,  15.85361, 8.785562, 13414.63, and 43.90234 respectively
+
+
+```{r}
+# histograms for the numeric columns
+hist(advertising$Age)
+
+hist(advertising$time_spent)
+
+hist(advertising$Area.Income)
+
+hist(advertising$internet_usage)
+
+hist(advertising$Male)
+```
+# the histograms indicate that the frequent ages are between 25years to 40 years. The least age is between 55-60 and 10-20
+
+# The frequent time spent was between 65 to 85. The least appearing amount of time spent on the blog was between 30-35 and 90-95 
+
+# the frequent chunk of income was between 50,000 to 70,000
+
+# internet usage was frequent around 110 and 140, 200 to 240
+
+# frequency for the column male(gender) was fairly equal
+
+
+```{r}
+## Bivariate Analysis
+
+# determining the covariance
+time_spent <- advertising$Daily.Time.Spent.on.Site
+age <- advertising$Age
+click_on_ad <- advertising$Clicked.on.Ad
+gender <- advertising$Male
+internet_usage <- advertising$Daily.Internet.Usage
+area_income <- advertising$Area.Income
+
+cov(time_spent, age)
+cov(click_on_ad, age)
+cov(click_on_ad, gender)
+cov(click_on_ad, time_spent)
+cov(click_on_ad, internet_usage)
+```
+# The covariance of time spent and age duration is about -46.17415. It indicates a negative linear relationship between the two variables
+
+# The covariance of time spent amd age duration is about 2.164665. It indicates a positive linear relationship between the two variables
+
+# The covariance of time click on ad and gender is about -0.00950951. It indicates a zero since the click per ad is paired equally with both greater and lesser values of the gender varaible.
+
+# The covariance of click on ad and time spent is about -5.933143. It indicates a negative linear relationship between the two variables
+
+# The covariance of click on ad and internet usage is about  -17.27409. It indicates a negative linear relationship between the two variables
+
+
+```{r}
+
+# getting the correlation coefficients of the columns
+cor(time_spent, age)
+cor(click_on_ad, age)
+cor(click_on_ad, gender)
+cor(click_on_ad, time_spent)
+cor(click_on_ad, internet_usage)
+```
+# the variables time spent and age have a weak negative linear correlation of -0.3315133
+
+# the variables click on ad and age have a weak postive correlation of 0.4925313
+
+# the variables "click on ad" and gender have an almost linear negative correlation of -0.7481166
+
+# the variables "click on ad" and "internet usage have an almost linear negative correlation of -0.7865392  
+
+
+
+# implementing the solution
+## Converting categorical columns to numerical
+```{r}
+library(dplyr)
+columns <- advertising %>% select(c(5, 6, 8))
+
+for (i in 1:length(columns)){
+ columns[[i]] <- as.numeric(as.factor(columns[[i]]))
+ }
+columns
+head(advertising)
+```
+
+## Implementing the solution
+  # Decision Trees
+```{r}
+# converting the column country, ad.Topic.Line to numeric
+
+advertising$Country <- as.integer(as.factor(advertising$Country))
+advertising$Ad.Topic.Line <- as.integer(as.factor(advertising$Ad.Topic.Line))
+```
+
+```{r}
+# column selection
+advertising <- advertising %>% select(1,2,3,4,5,7,8,)
+
+```
+
+```{r}
+# normalizing the data
+normalize <- function(x){
+  return ((x-min(x)) / (max(x)-min(x)))}
+advertising$Daily.Time.Spent.on.Site <- normalize(advertising$Daily.Time.Spent.on.Site)
+advertising$Age <- normalize(advertising$Age)
+advertising$Area.Income <- normalize(advertising$Area.Income)
+advertising$Daily.Internet.Usage <- normalize(advertising$Daily.Internet.Usage)
+advertising$Country <- normalize(advertising$Country)
+```
+
+```{r}
+
+library(rpart)
+m <- rpart(Clicked.on.Ad~ ., data=advertising, method="class")
+library(rpart.plot)
+rpart.plot(m)
+```
+
+```{r}
+
+library(caret)
+set.seed(1234)
+
+index <- createDataPartition(advertising$Clicked.on.Ad, p=0.75, list=FALSE)
+head(index)
+
+ad_test <- advertising[index, ]
+ad_train <- advertising[-index, ]
+
+library(e1071)
+library(class)
+train(Clicked.on.Ad~ ., data=ad_test, method='knn', preProcess=c('center', 'scale') )
+
+knnModel <- train(Clicked.on.Ad~ ., data=ad_test, method='knn', preProcess=c('center', 'scale') )
+ad_test$Clicked.on.Ad <- factor(ad_test$Clicked.on.Ad)
+knnPred <- predict(knnModel, newdata=ad_test)
+
+confusionMatrix(knnPred, ad_test$Clicked.on.Ad)
+
+
+# from the results the accuracy score was 96% and from a total of 750 predictions, 371 were the true positive and 355 were classified as true negative
+```
+
+
+
+
+## Recomendations 
+Emphasis should be on the ages of between 35-45 since they are the majority in the blog.This is evident by the covariant relationship between "click on ad" and age variables.
+
+Squeezing the cryptography course advertisment in the "Cloned 5thgeneration orchestration" ad topic would prove benefitial as evident by the mode of the ad topic line
+
+More emphasis should be put on the country Czech Republic and the city "Lisamouth" as evident by the mode values of both
+ 
+As for the section of prediction, decision trees provided a high and reliable accuracy. Further research should be carried out using other supervised learning methods such as SVM and random forest.
+
+
+
+

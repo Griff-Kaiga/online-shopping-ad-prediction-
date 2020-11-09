@@ -1,0 +1,284 @@
+---
+title: "Online Shopping"
+author: "Griffin Kaiga"
+date: "11/5/2020"
+output: html_document
+---
+
+## Defining the question
+The objective is to understand customers' behavior and learn the characteristics of various customer groups.
+
+Defining the Metric for Success
+the project will be considered a sucess once we are able to perform cluster analysis that will segment the customers into the various groups.
+
+##Understanding the context
+Kira Plastinina (Links to an external site.) is a Russian brand that is sold through a defunct chain of retail stores in Russia, Ukraine, Kazakhstan, Belarus, China, Philippines, and Armenia. The brand’s Sales and Marketing team would like to understand their customer’s behavior from data that they have collected over the past year. More specifically, they would like to learn the characteristics of customer groups.
+
+## Experimental design
+loading of data
+cleaning the data
+performing EDA
+implementing the solution 
+challenging the solution
+
+
+```{r}
+# reading the data
+o.shop <- read.csv("shoppers.csv", header = TRUE)
+head(o.shop)
+View(o.shop)
+```
+
+```{r}
+# checking the data types
+str(o.shop)
+```
+
+```{r}
+# checking for null values
+is.na(o.shop)
+# total number of missing values
+colSums(is.na(o.shop))
+
+# Dealing with missing values
+o.shop <- na.omit(o.shop)
+
+# check whether we still have missing values
+anyNA(o.shop)
+```
+We had a total of 14 null row values for the columns Administrative, Administrative_Duration,
+
+
+
+
+```{r}
+library(dplyr)
+# checking for outliers in our data
+outliers <- boxplot(o.shop %>% select_if(is.numeric))
+outliers
+
+```
+
+
+```{r}
+# check for duplicates 
+o.shop <- o.shop[!duplicated(o.shop),]
+o.shop
+```
+
+
+```{r}
+# checking for the unique values in each and every  column
+lapply(o.shop, function(x)unique(x))
+```
+
+
+Univariate Analysis
+```{r}
+summary(o.shop)
+```
+
+```{r}
+# mode of the columns
+getmode <- function(v) {
+   uniqv <- unique(v)
+   uniqv[which.max(tabulate(match(v, uniqv)))]
+}
+
+modes <- as.data.frame(c(getmode(o.shop$Month), getmode(o.shop$VisitorType), getmode(o.shop$Weekend), getmode(o.shop$Revenue)))
+modes
+
+```
+
+
+```
+```{r}
+numeric.cols<- o.shop %>% select(1,2,3,4,5,6,7,8,9,10,12,13,14,15)
+
+
+
+stddev = sapply(numeric.cols, sd)
+quantile = sapply(numeric.cols, quantile)
+stddev
+quantile
+
+```
+
+```{r}
+# frequency distribution for the categorical columns
+categorical.cols <- o.shop %>% select(11, 16,17,18)
+
+freq.Month <- as.data.frame(table(categorical.cols$Month))
+freq.Month
+
+freq.VisitorType <- as.data.frame(table(categorical.cols$VisitorType))
+freq.VisitorType
+
+freq.Weekend <- as.data.frame(table(categorical.cols$Weekend))
+freq.Weekend
+
+freq.Revenue <- as.data.frame(table(categorical.cols$Revenue))
+freq.Revenue
+
+```
+
+
+```{r}
+hist(o.shop$OperatingSystems)
+hist(o.shop$Browser)
+hist(o.shop$Region)
+hist(o.shop$TrafficType)
+```
+
+
+Bivariate Analysis
+```{r}
+# checking for the correlation
+library(ggcorrplot)
+correlation = round(cor(select_if(o.shop, is.numeric)), 6)
+ggcorrplot(corr, hc.order = T, ggtheme = ggplot2::theme_gray,
+   colors = c("#6D9EC1", "white", "#E46726"), lab = T)
+```
+
+```{r}
+# Scatter plot to for bounce rates and exit rates
+
+plot(o.shop$BounceRates, o.shop$ExitRates, xlab="Bounce Rates", ylab="Exit Rates")
+```
+
+
+```{r}
+# Comparing visitor type and revenue generation 
+
+ggplot(data = o.shop) + 
+  geom_bar(mapping = aes(x = VisitorType, fill = Revenue), position = "dodge")
+```  
+  
+
+
+
+Implementing the solution
+
+k-MEANS CLUSTERING
+
+```{r}
+
+```
+
+
+
+
+```{r}
+o.shop$Administrative_Duration[o.shop$Administrative_Duration<-1] <- 0
+
+```
+```{r}
+# preprocessing
+o.shop.new <- o.shop[, c(1,2,3,4,5,6,7,8,9,10,12,13,14,15)]
+o.shop.class <- o.shop[, c(11,16,17,18)]
+head(o.shop.new)
+
+# previewing the class columns
+head(o.shop.class)
+
+```
+
+```{r}
+# Comparing revenue generation by region
+
+ggplot(data = o.shop) + 
+  geom_bar(mapping = aes(x = Month, fill = Revenue), position = "dodge")
+```
+
+```{r}
+
+# Comparing revenue generation by special day status
+
+ggplot(data = o.shop) + 
+  geom_bar(mapping = aes(x = SpecialDay, fill = Revenue), position = "dodge")
+```
+
+```{r}
+# converting categorical variables to numeric
+
+o.shop$Month <- as.integer(as.factor(o.shop$Month))
+o.shop$VisitorType <- as.integer(as.factor(o.shop$Month))
+o.shop$Weekend <- as.integer(as.factor(o.shop$Weekend))
+o.shop$Revenue <- as.integer(as.factor(o.shop$Revenue))
+```
+
+```{r}
+# normalizing the dataset so that no particular atribute has more impact on the algorithm than others
+normalize <- normalize <- function(x){
+  return ((x-min(x)) / (max(x)-min(x)))
+}
+
+o.shop$Administrative <- normalize(o.shop$Administrative)
+o.shop$Administrative_Duration <- normalize(o.shop$Administrative_Duration)
+o.shop$Informational <- normalize(o.shop$Informational)
+o.shop$Informational_Duration <- normalize(o.shop$Informational_Duration)
+o.shop$ProductRelated <- normalize(o.shop$ProductRelated)
+o.shop$ProductRelated_Duration <- normalize(o.shop$ProductRelated_Duration)
+o.shop$BounceRates <- normalize(o.shop$BounceRates)
+o.shop$ExitRates <- normalize(o.shop$ExitRates)
+o.shop$PageValues <- normalize(o.shop$PageValues)
+o.shop$SpecialDay <- normalize(o.shop$SpecialDay)
+o.shop$OperatingSystems <- normalize(o.shop$OperatingSystems)
+o.shop$Browser <- normalize(o.shop$Browser)
+o.shop$Region <- normalize(o.shop$Region)
+o.shop$TrafficType <- normalize(o.shop$TrafficType)
+```
+```{r}
+# Performing clustering with a k value of 3
+
+results = kmeans(o.shop, 3)
+
+# Previewing the no. of records in each cluster
+
+results$size
+```
+
+```{r}
+# Getting the value of cluster center datapoint value(3 centers for k=3)
+ 
+results$centers
+```
+
+```{r}
+# Visualising the clusters 
+
+plot(o.shop[2,3], col = results$cluster) 
+```
+
+```{r}
+# Visualising the clusters 
+plot(o.shop[c(3,4)], col = results$cluster)
+plot(o.shop[c(5,6)], col = results$cluster)
+plot(o.shop[c(1,2)], col = results$cluster)
+plot(o.shop[c(7,8)], col = results$cluster)
+
+table(results$cluster, o.shop$Revenue)
+
+```
+
+# Hierarchical Clustering
+```{r}
+# First we use the dist() function to compute the Euclidean distance between observations, 
+# d will be the first argument in the hclust() function dissimilarity matrix
+# ---
+#
+d <- dist(o.shop, method = "euclidean")
+
+# We then hierarchical clustering using the Ward's method
+# ---
+# 
+res.hc <- hclust(d, method = "ward.D2")
+```
+
+```{r}
+#we plot the obtained dendrogram
+# 
+plot(res.hc, cex = 0.6, hang = -1)
+
+
+```
